@@ -18,7 +18,8 @@ manager.spawn()
     .then((workers) => {
         for (let i of workers.values()) {
             i.on('message', (message) => {
-                promises.shift()!.resolve(message);
+                if ('heapUsed' in message)
+                    promises.shift()!.resolve(message);
             });
         }
         sendMemoryUsage();
@@ -53,3 +54,12 @@ async function sendMemoryUsage() {
             });
         });
 }
+
+setTimeout(async () => {
+    console.log({
+        members: (await manager.broadcastEval(c => c.guilds.cache.reduce((acc, val) => acc + val.members.cache.size, 0))).reduce((acc, val) => acc + val, 0),
+        guilds: (await manager.broadcastEval(c => c.guilds.cache.size)).reduce((acc, val) => acc + val, 0),
+        users: (await manager.broadcastEval(c => c.users.cache.size)).reduce((acc, val) => acc + val, 0),
+        channels: (await manager.broadcastEval(c => c.channels.cache.size)).reduce((acc, val) => acc + val, 0)
+    });
+}, 20e3);

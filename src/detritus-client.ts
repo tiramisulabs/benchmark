@@ -29,3 +29,12 @@ function sendMemoryUsage() {
         heapTotal: usage.heapTotal
     });
 }
+
+setTimeout(() => {
+    console.log({
+        members: client.shards.reduce((acc, val) => acc + val.members.size, 0),
+        guilds: client.shards.reduce((acc, val) => acc + val.guilds.size, 0),
+        users: client.shards.reduce((acc, val) => acc + val.users.size, 0),
+        channels: client.shards.reduce((acc, val) => acc + val.channels.size, 0)
+    });
+}, 20e3);

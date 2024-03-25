@@ -25,3 +25,12 @@ function sendMemoryUsage() {
         heapTotal: usage.heapTotal
     });
 }
+
+setTimeout(() => {
+    console.log({
+        members: client.cache.members?.count('*'),
+        guilds: client.cache.guilds?.count(),
+        users: client.cache.users?.count(),
+        channels: client.cache.channels?.count('*')
+    });
+}, 20e3);

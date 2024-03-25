@@ -6,14 +6,14 @@ console.log('Connecting with', intents);
 
 sendMemoryUsage();
 
-const bot = new Client(
+const client = new Client(
     `Bot ${process.env.TOKEN}`,
     {
         intents: Number(intents),
         maxShards: 3
     });
 
-bot.connect();
+client.connect();
 
 setInterval(() => {
     sendMemoryUsage();
@@ -27,3 +27,12 @@ function sendMemoryUsage() {
         heapTotal: usage.heapTotal
     });
 }
+
+setTimeout(() => {
+    console.log({
+        members: client.guilds.map(x => x.members.size).reduce((acc, val) => acc + val, 0),
+        guilds: client.guilds.size,
+        users: client.users.size,
+        channels: client.guilds.map(x => x.channels.size).reduce((acc, val) => acc + val, 0)
+    });
+}, 20e3);

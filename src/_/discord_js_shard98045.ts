@@ -6,8 +6,8 @@ const client = new Client({
 
 client.login();
 
-process!.on('message', () => {
-    process.send!(sendMemoryUsage());
+process!.on('message', (message) => {
+    if (message == '') process.send!(sendMemoryUsage());
 });
 
 function sendMemoryUsage() {
