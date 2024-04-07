@@ -26,7 +26,7 @@ const end = Date.now() + (60 * 60 * 1e3);
 
 setTimeout(() => {
     process.exit(1);
-}, 60 * 60 * 1e3);
+}, Number(process.env.TIME) || 60 * 60 * 1e3);
 
 function formatMemoryUsage(data: number) {
     return `${Math.round((data / 1024 / 1024) * 100) / 100} MB`;
