@@ -9,10 +9,15 @@ sendMemoryUsage();
 const client = new Client({
     auth: `Bot ${process.env.TOKEN}`,
     disableCache: false,
-    gateway: { intents: Number(intents) }
+    gateway: { intents: Number(intents) },
+    collectionLimits: {
+        messages: 0
+    }
 });
 
 client.connect();
+
+client.on('error', () => { })
 
 setInterval(() => {
     sendMemoryUsage();

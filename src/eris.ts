@@ -10,10 +10,13 @@ const client = new Client(
     `Bot ${process.env.TOKEN}`,
     {
         intents: Number(intents),
-        maxShards: 3
+        maxShards: 3,
+        messageLimit: 0
     });
 
 client.connect();
+
+client.on('error', () => { })
 
 setInterval(() => {
     sendMemoryUsage();

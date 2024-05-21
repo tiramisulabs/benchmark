@@ -15,7 +15,12 @@ const client = new ClusterClient(
         shardCount: 3,
     });
 
-client.run();
+client.run()
+    .then(() => {
+        for (let i of client.shards) {
+            i[1].messages.limit = 0
+        }
+    })
 
 setInterval(() => {
     sendMemoryUsage();

@@ -11,7 +11,15 @@ client.start({
     connection: {
         intents: Number(intents)
     }
-});
+}).then(() => {
+    client.setServices({
+        cache: {
+            disabledCache: [
+                'messages'
+            ]
+        },
+    })
+})
 
 setInterval(() => {
     sendMemoryUsage();

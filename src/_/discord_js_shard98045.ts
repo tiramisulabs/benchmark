@@ -1,7 +1,11 @@
-import { Client } from 'discord.js';
+import { Client, Options } from 'discord.js';
 
 const client = new Client({
-    intents: 98045
+    intents: 98045,
+    makeCache: Options.cacheWithLimits({
+        MessageManager: 0,//??????!!?!?!?!
+        GuildMessageManager: 0//????????????????????????
+    })
 });
 
 client.login();
