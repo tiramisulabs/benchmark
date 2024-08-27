@@ -13,17 +13,37 @@ const client = new ClusterClient(
             intents: Number(intents),
         },
         shardCount: 3,
+        cache: {
+            applications: false,
+            channels: false,
+            connectedAccounts: false,
+            emojis: false,
+            guilds: false,
+            interactions: false,
+            members: false,
+            messages: false,
+            notes: false,
+            presences: false,
+            relationships: false,
+            roles: false,
+            sessions: false,
+            stageInstances: false,
+            stickers: false,
+            typings: false,
+            users: false,
+            voiceCalls: false,
+            voiceConnections: false,
+            voiceStates: false,
+        }
     });
 
-client.run()
-    .then(() => {
-        for (let i of client.shards) {
-            i[1].messages.limit = 0
-        }
-    })
+void client.run();
 
 setInterval(() => {
     sendMemoryUsage();
+    // for (let [, i] of client.shards) {
+    //     i.guilds.toArray();
+    // }
 }, 5e3);
 
 function sendMemoryUsage() {
@@ -34,12 +54,3 @@ function sendMemoryUsage() {
         heapTotal: usage.heapTotal
     });
 }
-
-setTimeout(() => {
-    console.log({
-        members: client.shards.reduce((acc, val) => acc + val.members.size, 0),
-        guilds: client.shards.reduce((acc, val) => acc + val.guilds.size, 0),
-        users: client.shards.reduce((acc, val) => acc + val.users.size, 0),
-        channels: client.shards.reduce((acc, val) => acc + val.channels.size, 0)
-    });
-}, 20e3);

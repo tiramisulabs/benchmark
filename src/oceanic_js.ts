@@ -11,16 +11,38 @@ const client = new Client({
     disableCache: false,
     gateway: { intents: Number(intents) },
     collectionLimits: {
-        messages: 0
+        messages: 0,
+        auditLogEntries: 0,
+        autoModerationRules: 0,
+        channels: 0,
+        emojis: 0,
+        groupChannels: 0,
+        guilds: 0,
+        guildThreads: 0,
+        integrations: 0,
+        invites: 0,
+        members: 0,
+        privateChannels: 0,
+        roles: 0,
+        scheduledEvents: 0,
+        stageInstances: 0,
+        stickers: 0,
+        unavailableGuilds: 0,
+        users: 0,
+        voiceMembers: 0,
+        voiceStates: 0,
     }
 });
 
-client.connect();
+void client.connect();
 
-client.on('error', () => { })
+client.on('error', () => {
+    //
+});
 
 setInterval(() => {
     sendMemoryUsage();
+    // [...client.guilds.values()];
 }, 5e3);
 
 function sendMemoryUsage() {
@@ -31,12 +53,3 @@ function sendMemoryUsage() {
         heapTotal: usage.heapTotal
     });
 }
-
-setTimeout(() => {
-    console.log({
-        members: client.guilds.map(x => x.members.size).reduce((acc, val) => acc + val, 0),
-        guilds: client.guilds.size,
-        users: client.users.size,
-        channels: client.guilds.map(x => x.channels.size).reduce((acc, val) => acc + val, 0)
-    });
-}, 20e3);

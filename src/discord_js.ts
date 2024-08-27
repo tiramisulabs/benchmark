@@ -1,65 +1,52 @@
-import { ShardingManager } from 'discord.js';
-import 'dotenv/config';
-import { join } from 'path';
-
+import { Client, Options } from 'discord.js';
 const [, , intents] = process.argv;
+
 console.log('Connecting with', intents);
 
+sendMemoryUsage();
 
-const promises: { promise: Promise<NodeJS.MemoryUsage>; resolve: (data: any) => any }[] = [];
-
-const manager = new ShardingManager(join(process.cwd(), 'dist', '_', `discord_js_shard${intents}.js`), {
-    mode: 'process',
-    token: process.env.TOKEN,
-    totalShards: 3
+const client = new Client({
+    shardCount: 3,
+    intents: Number(intents),
+    makeCache: Options.cacheWithLimits({
+        ApplicationCommandManager: 0,
+        AutoModerationRuleManager: 0,
+        BaseGuildEmojiManager: 0,
+        DMMessageManager: 0,
+        GuildBanManager: 0,
+        GuildEmojiManager: 0,
+        GuildForumThreadManager: 0,
+        GuildInviteManager: 0,
+        GuildMemberManager: 0,
+        GuildMessageManager: 0,
+        GuildScheduledEventManager: 0,
+        GuildStickerManager: 0,
+        GuildTextThreadManager: 0,
+        MessageManager: 0,
+        PresenceManager: 0,
+        ReactionManager: 0,
+        ReactionUserManager: 0,
+        StageInstanceManager: 0,
+        ThreadManager: 0,
+        ThreadMemberManager: 0,
+        UserManager: 0,
+        VoiceStateManager: 0,
+        // cannot disable guilds, roles, and channels cache
+    })
 });
 
-manager.spawn()
-    .then((workers) => {
-        for (let i of workers.values()) {
-            i.on('message', (message) => {
-                if ('heapUsed' in message)
-                    promises.shift()!.resolve(message);
-            });
-        }
-        sendMemoryUsage();
-        setInterval(() => {
-            sendMemoryUsage();
-        }, 5e3);
-    });
+void client.login(process.env.TOKEN);
 
-async function sendMemoryUsage() {
-    for (let _ of manager.shards) {
-        let resolve = (_: any): void => {
-            throw new Error('Unexpected');
-        };
-        const promise = new Promise<any>(res => {
-            resolve = res;
-        });
-        promises
-            .push({
-                promise,
-                resolve
-            });
-    }
-    for (let [_, value] of manager.shards) {
-        value.process!.send('');
-    }
-    await Promise.all(promises.map(x => x.promise))
-        .then((results: NodeJS.MemoryUsage[]) => {
-            console.log({
-                heapUsed: results.reduce((acc, val) => val.heapUsed + acc, 0),
-                rss: results.reduce((acc, val) => val.rss + acc, 0),
-                heapTotal: results.reduce((acc, val) => val.heapTotal + acc, 0)
-            });
-        });
-}
+setInterval(() => {
+    sendMemoryUsage();
+    // [...client.guilds.cache.values()];
+}, 5e3);
 
-setTimeout(async () => {
+function sendMemoryUsage() {
+    const usage = process.memoryUsage();
     console.log({
-        members: (await manager.broadcastEval(c => c.guilds.cache.reduce((acc, val) => acc + val.members.cache.size, 0))).reduce((acc, val) => acc + val, 0),
-        guilds: (await manager.broadcastEval(c => c.guilds.cache.size)).reduce((acc, val) => acc + val, 0),
-        users: (await manager.broadcastEval(c => c.users.cache.size)).reduce((acc, val) => acc + val, 0),
-        channels: (await manager.broadcastEval(c => c.channels.cache.size)).reduce((acc, val) => acc + val, 0)
+        heapUsed: usage.heapUsed,
+        rss: usage.rss,
+        heapTotal: usage.heapTotal
     });
-}, 20e3);
+}

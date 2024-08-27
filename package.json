@@ -4,23 +4,25 @@
     "description": "Benchmark",
     "main": "./dist/index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "seyfert": "node . seyfert"
     },
     "author": "MARCROCK22",
     "license": "Apache-2.0",
     "devDependencies": {
-        "@types/node": "^20.12.12",
-        "@typescript-eslint/eslint-plugin": "^7.9.0",
-        "@typescript-eslint/parser": "^7.9.0",
-        "eslint": "^9.3.0",
-        "typescript": "^5.4.5"
+        "@types/node": "^22.4.0",
+        "@typescript-eslint/eslint-plugin": "^8.1.0",
+        "@typescript-eslint/parser": "^8.1.0",
+        "eslint": "^8.57.0",
+        "typescript": "^5.5.4"
     },
     "dependencies": {
         "detritus-client": "^0.16.3",
-        "discord.js": "^14.15.2",
+        "discord.js": "^14.15.3",
         "dotenv": "^16.4.5",
         "eris": "^0.17.2",
-        "oceanic.js": "^1.10.4",
-        "seyfert": "^1.4.0"
+        "eslint-plugin-import": "^2.29.1",
+        "oceanic.js": "^1.11.1",
+        "seyfert": "github:tiramisulabs/seyfert"
     }
 }
