@@ -17,7 +17,7 @@ console.log({ intents, time: process.env.TIME });
 const end = Date.now() + (Number(process.env.TIME) || (12 * (60 * 60 * 1e3)));
 
 const stream = createWriteStream(join(process.cwd(), 'results', `${path.split('.js')[0]}-${intents}.txt`));
-const bot = exec(`node --expose-gc ./dist/${path} ${intents}`);
+const bot = exec(`node ./dist/${path} ${intents}`);
 stream.write('[\n');
 bot.stdout?.on('data', (data) => {
     if (typeof data === 'string' && data.startsWith('{ heapUsed')) {

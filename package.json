@@ -4,8 +4,7 @@
     "description": "Benchmark",
     "main": "./dist/index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "seyfert": "node . seyfert"
+        "test": "echo \"Error: no test specified\" && exit 1"
     },
     "author": "MARCROCK22",
     "license": "Apache-2.0",
