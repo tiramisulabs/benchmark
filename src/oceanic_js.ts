@@ -17,7 +17,7 @@ const client = new Client({
         channels: 0,
         emojis: 0,
         groupChannels: 0,
-        guilds: 0,
+        // guilds: 0,
         guildThreads: 0,
         integrations: 0,
         invites: 0,
@@ -30,7 +30,7 @@ const client = new Client({
         unavailableGuilds: 0,
         users: 0,
         voiceMembers: 0,
-        voiceStates: 0,
+        voiceStates: 0
     }
 });
 
@@ -42,7 +42,8 @@ client.on('error', () => {
 
 setInterval(() => {
     sendMemoryUsage();
-    // [...client.guilds.values()];
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    [...client.guilds.values()];
 }, 5e3);
 
 function sendMemoryUsage() {

@@ -1,4 +1,4 @@
-import { Client, Options } from 'discord.js';
+import { Options, Client } from 'discord.js';
 const [, , intents] = process.argv;
 
 console.log('Connecting with', intents);
@@ -31,6 +31,8 @@ const client = new Client({
         ThreadMemberManager: 0,
         UserManager: 0,
         VoiceStateManager: 0,
+        ApplicationEmojiManager: 0,
+        EntitlementManager: 0
         // cannot disable guilds, roles, and channels cache
     })
 });
@@ -39,7 +41,8 @@ void client.login(process.env.TOKEN);
 
 setInterval(() => {
     sendMemoryUsage();
-    // [...client.guilds.cache.values()];
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    [...client.guilds.cache.values()];
 }, 5e3);
 
 function sendMemoryUsage() {

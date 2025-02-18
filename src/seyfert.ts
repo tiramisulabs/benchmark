@@ -1,4 +1,4 @@
-import { Client, MemoryAdapter } from 'seyfert';
+import { MemoryAdapter, Client } from 'seyfert';
 const [, , intents] = process.argv;
 
 console.log('Connecting with', intents);
@@ -15,31 +15,24 @@ const client = new Client({
 client.setServices({
     cache: {
         disabledCache: {
-            bans: true,
             channels: true,
+            overwrites: true,
+            bans: true,
             emojis: true,
-            guilds: true,
             members: true,
             messages: true,
-            overwrites: true,
             presences: true,
             roles: true,
             stageInstances: true,
             stickers: true,
-            threads: true,
             users: true,
             voiceStates: true,
-            onPacket: true,
+            // enabled
+            onPacket: false,
+            guilds: false
         },
-        adapter: new MemoryAdapter({
-            encode(data) {
-                return data;
-            },
-            decode(data) {
-                return data;
-            },
-        })
-    },
+        adapter: new MemoryAdapter()
+    }
 });
 
 void client.start({
@@ -50,7 +43,8 @@ void client.start({
 
 setInterval(() => {
     sendMemoryUsage();
-    // client.cache.guilds!.valuesRaw();
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    [...client.cache.guilds!.valuesRaw()];
 }, 5e3);
 
 function sendMemoryUsage() {

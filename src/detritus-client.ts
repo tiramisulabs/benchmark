@@ -10,15 +10,15 @@ const client = new ClusterClient(
     `${process.env.TOKEN}`,
     {
         gateway: {
-            intents: Number(intents),
+            intents: Number(intents)
         },
         shardCount: 3,
         cache: {
+            guilds: true,
             applications: false,
             channels: false,
             connectedAccounts: false,
             emojis: false,
-            guilds: false,
             interactions: false,
             members: false,
             messages: false,
@@ -33,17 +33,19 @@ const client = new ClusterClient(
             users: false,
             voiceCalls: false,
             voiceConnections: false,
-            voiceStates: false,
+            voiceStates: false
         }
-    });
+    }
+);
 
 void client.run();
 
 setInterval(() => {
     sendMemoryUsage();
-    // for (let [, i] of client.shards) {
-    //     i.guilds.toArray();
-    // }
+    for (const [, i] of client.shards) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        [...i.guilds.toArray()];
+    }
 }, 5e3);
 
 function sendMemoryUsage() {

@@ -1,14 +1,11 @@
 // @ts-check
 
-require('dotenv/config');
-const { config } = require('seyfert');
+import 'dotenv/config';
+import { config } from 'seyfert';
 
-module.exports = config.bot({
+export default config.bot({
     locations: {
-        base: 'src',
-        output: 'dist',
+        base: 'dist',
     },
-    intents: [],
-    debug: false,
     token: process.env.TOKEN ?? ''
 });

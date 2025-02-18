@@ -2,7 +2,7 @@
     "compilerOptions": {
         "experimentalDecorators": true,
         "target": "esnext",
-        "module": "CommonJS",
+        "module": "ESNext",
         "removeComments": true,
         "esModuleInterop": true,
         "resolveJsonModule": true,
