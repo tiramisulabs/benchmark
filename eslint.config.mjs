@@ -1,6 +1,6 @@
 import theConfig from '@marcrock22/eslint';
-import { config } from 'typescript-eslint';
+import { defineConfig } from 'eslint/config';
 
-export default config(
-    theConfig
-)
+export default defineConfig(
+    theConfig,
+);

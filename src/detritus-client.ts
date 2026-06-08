@@ -6,13 +6,19 @@ console.log('Connecting with', intents);
 
 sendMemoryUsage();
 
+const token = process.env.TOKEN;
+if (!token) {
+    console.error('No token provided');
+    process.exit(1);
+}
+
 const client = new ClusterClient(
-    `${process.env.TOKEN}`,
+    token,
     {
         gateway: {
             intents: Number(intents)
         },
-        shardCount: 3,
+        shardCount: 32,
         cache: {
             guilds: true,
             applications: false,

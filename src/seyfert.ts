@@ -8,7 +8,7 @@ sendMemoryUsage();
 const client = new Client({
     shards: {
         start: 0,
-        end: 3
+        end: 32
     }
 });
 

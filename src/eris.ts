@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-deprecated */
-
 import 'dotenv/config';
 import { Client } from 'eris';
 
@@ -8,11 +6,17 @@ console.log('Connecting with', intents);
 
 sendMemoryUsage();
 
+const token = process.env.TOKEN;
+if (!token) {
+    console.error('No token provided');
+    process.exit(1);
+}
+
 const client = new Client(
-    `Bot ${process.env.TOKEN}`,
+    `Bot ${token}`,
     {
         intents: Number(intents),
-        maxShards: 3,
+        maxShards: 32,
         messageLimit: 0 // lmao whats this
     }
 );
@@ -41,7 +45,8 @@ setTimeout(() => {
         guild.stageInstances.limit = 0;
         guild.roles.limit = 0;
     }
-}, 20e3);
+    // wait for 32 shards to connect
+}, 34 * 5 * 1e3);
 
 void client.connect();
 

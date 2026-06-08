@@ -53,8 +53,8 @@ async function main() {
             default:
                 throw new Error(`Invalid runtime ${runtime}`)
         }
-        // 3(shards) * 5(seconds) = 15 + 5(gap)
-        await wait(20e3);
+        // 32 * 10(seconds) = (32 * 5) + 10(gap)
+        await wait((34 * 5) * 1e3);
     }
 }
 

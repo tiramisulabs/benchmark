@@ -5,8 +5,14 @@ console.log('Connecting with', intents);
 
 sendMemoryUsage();
 
+const token = process.env.TOKEN;
+if (!token) {
+    console.error('No token provided');
+    process.exit(1);
+}
+
 const client = new Client({
-    shardCount: 3,
+    shardCount: 32,
     intents: Number(intents),
     makeCache: Options.cacheWithLimits({
         ApplicationCommandManager: 0,
@@ -37,7 +43,7 @@ const client = new Client({
     })
 });
 
-void client.login(process.env.TOKEN);
+void client.login(token);
 
 setInterval(() => {
     sendMemoryUsage();

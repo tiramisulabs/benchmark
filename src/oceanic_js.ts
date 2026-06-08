@@ -6,10 +6,20 @@ console.log('Connecting with', intents);
 
 sendMemoryUsage();
 
+const token = process.env.TOKEN;
+if (!token) {
+    console.error('No token provided');
+    process.exit(1);
+}
+
 const client = new Client({
-    auth: `Bot ${process.env.TOKEN}`,
+    auth: `Bot ${token}`,
     disableCache: false,
-    gateway: { intents: Number(intents) },
+    gateway: {
+        intents: Number(intents),
+        firstShardID: 0,
+        lastShardID: 32
+    },
     collectionLimits: {
         messages: 0,
         auditLogEntries: 0,

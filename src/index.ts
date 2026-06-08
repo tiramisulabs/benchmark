@@ -1,6 +1,7 @@
 /* eslint-disable no-negated-condition */
 import 'dotenv/config';
 import { createWriteStream, lstatSync, mkdirSync } from 'node:fs';
+import { GatewayIntentBits } from 'seyfert/lib/types/index.js';
 import { exec } from 'node:child_process';
 import { join } from 'node:path';
 
@@ -10,10 +11,19 @@ try {
     mkdirSync(join(process.cwd(), 'results'));
 }
 
-const path = process.argv[2];
-const intents = process.argv[3] === 'light'
-    ? 513// guilds and guildMessages
-    : 98_045;// all except privileged
+const path = process.argv.at(2);
+if (!path) {
+    process.exit(1);
+}
+
+const library = path.split('.js').at(0);
+if (!library) {
+    process.exit(1);
+}
+
+const intents = process.argv.at(3) === 'light'
+    ? GatewayIntentBits.Guilds | GatewayIntentBits.GuildMessages | GatewayIntentBits.MessageContent
+    : GatewayIntentBits.NonPrivilaged;
 console.log({
     intents,
     time: process.env.TIME
@@ -28,7 +38,7 @@ const runtime = typeof Bun !== 'undefined'
         ? 'deno'
         : 'node';
 
-const stream = createWriteStream(join(process.cwd(), 'results', runtime, `${path.split('.js')[0]}-${intents}.txt`));
+const stream = createWriteStream(join(process.cwd(), 'results', runtime, `${library}-${intents}.txt`));
 const bot = exec(`node ./dist/${path} ${intents}`);
 stream.write('[\n');
 bot.stdout?.on('data', (data) => {
