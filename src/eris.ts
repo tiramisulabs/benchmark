@@ -1,70 +1,36 @@
-import 'dotenv/config';
 import { Client } from 'eris';
+import { INTENTS, MESSAGES_PER_CHANNEL, startReport, token } from './report.js';
 
-const [, , intents] = process.argv;
-console.log('Connecting with', intents);
-
-sendMemoryUsage();
-
-const token = process.env.TOKEN;
-if (!token) {
-    console.error('No token provided');
-    process.exit(1);
-}
-
-const client = new Client(
-    `Bot ${token}`,
-    {
-        intents: Number(intents),
-        maxShards: 32,
-        messageLimit: 0 // lmao whats this
-    }
-);
-
-// client.guilds.limit = 0;
-client.privateChannels.limit = 0;
-client.unavailableGuilds.limit = 0;
-client.users.limit = 0;
-client.voiceConnections.limit = 0;
-
-setTimeout(() => {
-    for (const [, guild] of client.guilds) {
-        guild.voiceStates.clear();
-        guild.channels.clear();
-        guild.threads.clear();
-        guild.members.clear();
-        guild.events.clear();
-        guild.stageInstances.clear();
-        guild.roles.clear();
-
-        guild.voiceStates.limit = 0;
-        guild.channels.limit = 0;
-        guild.threads.limit = 0;
-        guild.members.limit = 0;
-        guild.events.limit = 0;
-        guild.stageInstances.limit = 0;
-        guild.roles.limit = 0;
-    }
-    // wait for 32 shards to connect
-}, 34 * 5 * 1e3);
-
-void client.connect();
-
-client.on('error', () => {
-    //
+const client = new Client(`Bot ${token()}`, {
+    intents: INTENTS,
+    maxShards: 1,
+    messageLimit: MESSAGES_PER_CHANNEL,
+    compress: false,
+    largeThreshold: 250
 });
 
-setInterval(() => {
-    sendMemoryUsage();
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    [...client.guilds.values()];
-}, 5e3);
+const report = startReport(() => {
+    let channels = client.dmChannels.size;
+    let members = 0;
+    let roles = 0;
+    let emojis = 0;
+    let voiceStates = 0;
+    let messages = 0;
+    for (const channel of client.dmChannels.values()) messages += channel.messages.size;
+    for (const guild of client.guilds.values()) {
+        channels += guild.channels.size + guild.threads.size;
+        members += guild.members.size;
+        roles += guild.roles.size;
+        emojis += guild.emojis.length;
+        voiceStates += guild.voiceStates.size;
+        for (const channel of [...guild.channels.values(), ...guild.threads.values()]) {
+            if ('messages' in channel) messages += channel.messages.size;
+        }
+    }
+    return { guilds: client.guilds.size, channels, users: client.users.size, members, roles, emojis, voiceStates, messages };
+});
 
-function sendMemoryUsage() {
-    const usage = process.memoryUsage();
-    console.log({
-        heapUsed: usage.heapUsed,
-        rss: usage.rss,
-        heapTotal: usage.heapTotal
-    });
-}
+client.on('rawWS', packet => report.packet(packet));
+client.on('error', error => console.error(error));
+
+void client.connect();

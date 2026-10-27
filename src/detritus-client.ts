@@ -1,64 +1,33 @@
-import { ClusterClient } from 'detritus-client';
-import 'dotenv/config';
+import { ShardClient } from 'detritus-client';
+import { INTENTS, MESSAGES_PER_CHANNEL, startReport, token } from './report.js';
 
-const [, , intents] = process.argv;
-console.log('Connecting with', intents);
+const client = new ShardClient(token(), {
+    gateway: {
+        intents: INTENTS,
+        compress: false,
+        largeThreshold: 250
+    },
+    // messages expire after 10 minutes by default; no expiry here, so the
+    // limit below is the only one, as in every other library
+    cache: { messages: { expire: 0 } }
+});
 
-sendMemoryUsage();
+const report = startReport(() => ({
+    guilds: client.guilds.length,
+    channels: client.channels.length,
+    users: client.users.length,
+    members: client.members.length,
+    roles: client.roles.length,
+    emojis: client.emojis.length,
+    voiceStates: client.voiceStates.length,
+    messages: client.messages.length
+}));
 
-const token = process.env.TOKEN;
-if (!token) {
-    console.error('No token provided');
-    process.exit(1);
-}
-
-const client = new ClusterClient(
-    token,
-    {
-        gateway: {
-            intents: Number(intents)
-        },
-        shardCount: 32,
-        cache: {
-            guilds: true,
-            applications: false,
-            channels: false,
-            connectedAccounts: false,
-            emojis: false,
-            interactions: false,
-            members: false,
-            messages: false,
-            notes: false,
-            presences: false,
-            relationships: false,
-            roles: false,
-            sessions: false,
-            stageInstances: false,
-            stickers: false,
-            typings: false,
-            users: false,
-            voiceCalls: false,
-            voiceConnections: false,
-            voiceStates: false
-        }
-    }
-);
+client.on('raw', packet => report.packet(packet));
+// Detritus only limits messages globally: MESSAGES_PER_CHANNEL for every
+// channel it knows once the guilds have loaded
+client.once('gatewayReady', () => {
+    (client.messages as unknown as { limit: number }).limit = MESSAGES_PER_CHANNEL * Math.max(1, client.channels.length);
+});
 
 void client.run();
-
-setInterval(() => {
-    sendMemoryUsage();
-    for (const [, i] of client.shards) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-        [...i.guilds.toArray()];
-    }
-}, 5e3);
-
-function sendMemoryUsage() {
-    const usage = process.memoryUsage();
-    console.log({
-        heapUsed: usage.heapUsed,
-        rss: usage.rss,
-        heapTotal: usage.heapTotal
-    });
-}

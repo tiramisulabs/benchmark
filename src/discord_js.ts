@@ -1,61 +1,46 @@
-import { Options, Client } from 'discord.js';
-const [, , intents] = process.argv;
-
-console.log('Connecting with', intents);
-
-sendMemoryUsage();
-
-const token = process.env.TOKEN;
-if (!token) {
-    console.error('No token provided');
-    process.exit(1);
-}
+import { Client, Options } from 'discord.js';
+import { INTENTS, MESSAGES_PER_CHANNEL, startReport, token } from './report.js';
 
 const client = new Client({
-    shardCount: 32,
-    intents: Number(intents),
-    makeCache: Options.cacheWithLimits({
-        ApplicationCommandManager: 0,
-        AutoModerationRuleManager: 0,
-        BaseGuildEmojiManager: 0,
-        DMMessageManager: 0,
-        GuildBanManager: 0,
-        GuildEmojiManager: 0,
-        GuildForumThreadManager: 0,
-        GuildInviteManager: 0,
-        GuildMemberManager: 0,
-        GuildMessageManager: 0,
-        GuildScheduledEventManager: 0,
-        GuildStickerManager: 0,
-        GuildTextThreadManager: 0,
-        MessageManager: 0,
-        PresenceManager: 0,
-        ReactionManager: 0,
-        ReactionUserManager: 0,
-        StageInstanceManager: 0,
-        ThreadManager: 0,
-        ThreadMemberManager: 0,
-        UserManager: 0,
-        VoiceStateManager: 0,
-        ApplicationEmojiManager: 0,
-        EntitlementManager: 0
-        // cannot disable guilds, roles, and channels cache
-    })
+    intents: INTENTS,
+    shards: [0],
+    shardCount: 1,
+    // the default limits, minus the thread sweeper: every library keeps the
+    // same MESSAGES_PER_CHANNEL and nothing else is limited or swept
+    makeCache: Options.cacheWithLimits({ MessageManager: MESSAGES_PER_CHANNEL }),
+    sweepers: {},
+    // Discord's default, which the other libraries send; discord.js sends 50
+    ws: { large_threshold: 250 }
 });
 
-void client.login(token);
+const report = startReport(() => {
+    let members = 0;
+    let roles = 0;
+    let emojis = 0;
+    let voiceStates = 0;
+    let messages = 0;
+    for (const guild of client.guilds.cache.values()) {
+        members += guild.members.cache.size;
+        roles += guild.roles.cache.size;
+        emojis += guild.emojis.cache.size;
+        voiceStates += guild.voiceStates.cache.size;
+    }
+    for (const channel of client.channels.cache.values()) {
+        if ('messages' in channel) messages += channel.messages.cache.size;
+    }
+    return {
+        guilds: client.guilds.cache.size,
+        channels: client.channels.cache.size,
+        users: client.users.cache.size,
+        members,
+        roles,
+        emojis,
+        voiceStates,
+        messages
+    };
+});
 
-setInterval(() => {
-    sendMemoryUsage();
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    [...client.guilds.cache.values()];
-}, 5e3);
+client.on('raw', packet => report.packet(packet));
+client.on('error', error => console.error(error));
 
-function sendMemoryUsage() {
-    const usage = process.memoryUsage();
-    console.log({
-        heapUsed: usage.heapUsed,
-        rss: usage.rss,
-        heapTotal: usage.heapTotal
-    });
-}
+void client.login(token());

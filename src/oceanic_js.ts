@@ -1,66 +1,46 @@
-import 'dotenv/config';
 import { Client } from 'oceanic.js';
-
-const [, , intents] = process.argv;
-console.log('Connecting with', intents);
-
-sendMemoryUsage();
-
-const token = process.env.TOKEN;
-if (!token) {
-    console.error('No token provided');
-    process.exit(1);
-}
+import { INTENTS, MESSAGES_PER_CHANNEL, startReport, token } from './report.js';
 
 const client = new Client({
-    auth: `Bot ${token}`,
-    disableCache: false,
+    auth: `Bot ${token()}`,
     gateway: {
-        intents: Number(intents),
-        firstShardID: 0,
-        lastShardID: 32
+        intents: INTENTS,
+        maxShards: 1,
+        compress: false,
+        largeThreshold: 250
     },
+    // the defaults raised to unlimited, except messages: every library keeps
+    // the same MESSAGES_PER_CHANNEL
     collectionLimits: {
-        messages: 0,
-        auditLogEntries: 0,
-        autoModerationRules: 0,
-        channels: 0,
-        emojis: 0,
-        groupChannels: 0,
-        // guilds: 0,
-        guildThreads: 0,
-        integrations: 0,
-        invites: 0,
-        members: 0,
-        privateChannels: 0,
-        roles: 0,
-        scheduledEvents: 0,
-        stageInstances: 0,
-        stickers: 0,
-        unavailableGuilds: 0,
-        users: 0,
-        voiceMembers: 0,
-        voiceStates: 0
+        messages: MESSAGES_PER_CHANNEL,
+        auditLogEntries: Infinity,
+        groupChannels: Infinity,
+        privateChannels: Infinity
     }
 });
 
-void client.connect();
-
-client.on('error', () => {
-    //
+const report = startReport(() => {
+    let channels = client.privateChannels.size + client.groupChannels.size;
+    let members = 0;
+    let roles = 0;
+    let emojis = 0;
+    let voiceStates = 0;
+    let messages = 0;
+    for (const channel of client.privateChannels.values()) messages += channel.messages.size;
+    for (const guild of client.guilds.values()) {
+        channels += guild.channels.size + guild.threads.size;
+        members += guild.members.size;
+        roles += guild.roles.size;
+        emojis += guild.emojis.size;
+        voiceStates += guild.voiceStates.size;
+        for (const channel of [...guild.channels.values(), ...guild.threads.values()]) {
+            if ('messages' in channel) messages += channel.messages.size;
+        }
+    }
+    return { guilds: client.guilds.size, channels, users: client.users.size, members, roles, emojis, voiceStates, messages };
 });
 
-setInterval(() => {
-    sendMemoryUsage();
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    [...client.guilds.values()];
-}, 5e3);
+client.on('packet', packet => report.packet(packet));
+client.on('error', error => console.error(error));
 
-function sendMemoryUsage() {
-    const usage = process.memoryUsage();
-    console.log({
-        heapUsed: usage.heapUsed,
-        rss: usage.rss,
-        heapTotal: usage.heapTotal
-    });
-}
+void client.connect();
